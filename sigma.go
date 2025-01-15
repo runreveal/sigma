@@ -276,7 +276,19 @@ func (atom *SearchAtom) ExprMatches(entry *LogEntry, opts *MatchOptions) bool {
 	}
 	field := entry.Message
 	if atom.Field != "" {
-		field = entry.Fields[atom.Field]
+		// Try an exact match first for efficiency
+		if v, ok := entry.Fields[atom.Field]; ok {
+			field = v
+		} else {
+			// If no exact match, try case insensitive
+			wantField := strings.ToLower(atom.Field)
+			for k, v := range entry.Fields {
+				if strings.ToLower(k) == wantField {
+					field = v
+					break
+				}
+			}
+		}
 	}
 	var placeholders map[string][]string
 	if opts != nil {
