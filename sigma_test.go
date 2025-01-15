@@ -37,6 +37,16 @@ func TestDetectionMatches(t *testing.T) {
 			want: false,
 		},
 		{
+			filename: "sigma/aws_cloudtrail_disable_logging_caseinsensitive.yml",
+			entry: &LogEntry{
+				Fields: map[string]string{
+					"eventSource": "cloudtrail.amazonaws.com",
+					"eventName":   "StopLogging",
+				},
+			},
+			want: true,
+		},
+		{
 			filename: "sigma/aws_cloudtrail_disable_logging.yml",
 			entry: &LogEntry{
 				Fields: map[string]string{
