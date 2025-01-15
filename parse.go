@@ -500,15 +500,33 @@ func parseSearchMap(node *yaml.Node) (Expr, error) {
 		atom := new(SearchAtom)
 		var modifiers string
 		var ok bool
-		atom.Field, modifiers, ok = strings.Cut(k, "|")
+
+		// Make the field name case insensitive by adding a "i" modifier
+		rawField, modifiers, ok := strings.Cut(k, "|")
 		if ok {
 			if modifiers == "" {
 				return nil, fmt.Errorf("%s: empty modifiers", k)
 			}
-			atom.Modifiers = strings.Split(modifiers, "|")
+			// Add field case insensitive modifier if not already present
+			mods := strings.Split(modifiers, "|")
+			hasFieldI := false
+			for _, mod := range mods {
+				if mod == "i" {
+					hasFieldI = true
+					break
+				}
+			}
+			if !hasFieldI {
+				mods = append(mods, "i")
+			}
+			atom.Modifiers = mods
+		} else {
+			// No existing modifiers, add field case insensitive modifier
+			atom.Modifiers = []string{"i"}
 		}
+		atom.Field = rawField
 
-		// TODO(maybe): Handle integers differently?
+		// Handle the value patterns (keeping them case sensitive)
 		switch valueNode.Kind {
 		case yaml.ScalarNode:
 			var v string
